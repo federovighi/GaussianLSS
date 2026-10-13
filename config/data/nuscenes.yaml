@@ -5,7 +5,7 @@ dataset: 'nuscenes_generated'
 # used to get_split
 version: 'v1.0-trainval'                # 'v1.0-mini' for debugging trainval
 dataset_dir: ./data/nuscenes
-labels_dir: ./data/nuscenes/labels
+labels_dir: ./data/nuscenes/GLSS_labels
 
 # used to generate dataset
 cameras: [[0, 1, 2, 3, 4, 5]]
