@@ -63,7 +63,7 @@ def resize(src, dst=None, shape=None, idx=0):
 
 
 class NuScenesViz:
-    def __init__(self, keys=[], bev_h=200, bev_w=200):
+    def __init__(self, keys=[], bev_h=100, bev_w=200): # less_cam modificata bev_h
         self.keys = keys
         self.bev_h = bev_h
         self.bev_w = bev_w

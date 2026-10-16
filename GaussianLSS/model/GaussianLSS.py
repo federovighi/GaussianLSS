@@ -108,12 +108,12 @@ class GaussianLSS(nn.Module):
         return output
     
 class BEVCamera:
-    def __init__(self, x_range=(-50, 50), y_range=(-50, 50), image_size=200):
+    def __init__(self, x_range=(0, 50), y_range=(-50, 50), image_width=200, image_height=100): #less_cam separate dimensioni image e cambiato range y
         # Orthographic projection parameters
         self.x_min, self.x_max = x_range
         self.y_min, self.y_max = y_range
-        self.image_width = image_size
-        self.image_height = image_size
+        self.image_width = image_width #image_size #less_cam
+        self.image_height = image_height #image_size #less_cam
 
         # Set up FoV to cover the range [-50, 50] for both X and Y
         self.FoVx = (self.x_max - self.x_min)  # Width of the scene in world coordinates
@@ -125,7 +125,7 @@ class BEVCamera:
         # Orthographic projection matrix for BEV
         self.set_transform()
     
-    def set_transform(self, h=200, w=200, h_meters=100, w_meters=100):
+    def set_transform(self, h=100, w=200, h_meters=50, w_meters=100): #less_cam cambiato valori h
         """ Set up an orthographic projection matrix for BEV. """
         # Create an orthographic projection matrix
         sh = h / h_meters
@@ -137,9 +137,9 @@ class BEVCamera:
             [ 0.,  0.,  0.,         0.],
         ], dtype=torch.float32)
 
-        self.full_proj_transform = torch.tensor([
-            [ 0., -sh,  0.,          h/2.],
-            [-sw,   0.,  0.,         w/2.],
+        self.full_proj_transform = torch.tensor([ # less_cam cambiata la matrice cambiati w e h per concordanza della trasformazione y con w e x con h e messo h invece di h/2 per spostare nel bordo inferiore l'ego vehicle
+            [ 0., -sw,  0.,          w/2.],
+            [-sh,   0.,  0.,         h],
             [ 0.,  0.,  0.,           1.],
             [ 0.,  0.,  0.,           1.],
         ], dtype=torch.float32)
@@ -169,7 +169,7 @@ class GaussianRenderer(nn.Module):
         bev_out = []
         mask = (opacities > self.threshold)
         mask = mask.squeeze(-1)
-        self.set_render_scale(200, 200)
+        self.set_render_scale(100,200)  #(200,200)  #less_cam
         self.set_Rasterizer(device)
         for i in range(b):
             rendered_bev, _ = self.rasterizer(

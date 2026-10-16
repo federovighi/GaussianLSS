@@ -20,10 +20,10 @@ def get_split(split, dataset_name):
     return split_path.read_text().strip().split('\n')
 
 
-def get_view_matrix(h=200, w=200, h_meters=100.0, w_meters=100.0, offset=0.0):
+def get_view_matrix(h=100, w=200, h_meters=50.0, w_meters=100.0, offset=0.0): # less_cam modifica dovuta alla bev
     sh = h / h_meters
     sw = w / w_meters
-    return np.float32([
+    return np.float32([             
         [ 0., -sw,          w/2.],
         [-sh,  0., h*offset+h/2.],
         [ 0.,  0.,            1.]

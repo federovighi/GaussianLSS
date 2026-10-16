@@ -16,7 +16,9 @@ class Up(nn.Module):
         )
 
     def forward(self, x1, x2):
-        x1 = self.up(x1)
+        #x1 = self.up(x1)
+        # modifica dovuta a problematiche di dimensioni con self up dato che le conv fanno 100->50->25->13 che ricostrudendo va a 26 invece che 25 creando disparità di dimensioni 
+        x1 = torch.nn.functional.interpolate(x1,size=x2.shape[-2:],mode='bilinear',align_corners=False) # less-cam  
         x1 = torch.cat([x2, x1], dim=1)
         return self.conv(x1)
 

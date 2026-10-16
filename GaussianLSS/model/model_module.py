@@ -35,12 +35,12 @@ class ModelModule(pl.LightningModule):
                 self.metrics.update(pred, batch)
                 
         if self.trainer is not None:
-            self.log(f'{prefix}/loss', loss.detach(), on_step=on_step, on_epoch=True, logger=True)
+            self.log(f'{prefix}/loss', loss.detach(), on_step=on_step, on_epoch=True, logger=True, sync_dist=True)
             self.log_dict({f'{prefix}/loss/{k}': v.detach() for k, v in loss_details.items()},
-                          on_step=on_step, on_epoch=True,logger=True)
+                          on_step=on_step, on_epoch=True,logger=True, sync_dist=True)
             if self.training and weights:
                 self.log_dict({f'{prefix}/weights/{k}': v.detach() for k, v in weights.items()},
-                        on_step=on_step, on_epoch=True,logger=True)
+                        on_step=on_step, on_epoch=True,logger=True, sync_dist=True)
 
             if 'num_gaussians' in pred:
                 self.log(f'{prefix}/num_gaussians', pred['num_gaussians'], on_step=on_step, on_epoch=True, logger=True)
@@ -84,13 +84,13 @@ class ModelModule(pl.LightningModule):
             if isinstance(value, dict):
                 for subkey, val in value.items():
                     # print(f'{prefix}/metrics/{key}{subkey}: {val}')
-                    self.log(f'{prefix}/metrics/{key}{subkey}', val, on_epoch=True, logger=True)
+                    self.log(f'{prefix}/metrics/{key}{subkey}', val, on_epoch=True, logger=True, sync_dist=True)
             else:
                 if 'IoU' in key:
                     ious.append(value)
-                self.log(f'{prefix}/metrics/{key}', value, on_epoch=True, logger=True)
+                self.log(f'{prefix}/metrics/{key}', value, on_epoch=True, logger=True, sync_dist=True)
 
-        self.log(f'{prefix}/metrics/mIoU', torch.stack(ious).mean(), on_epoch=True, logger=True)
+        self.log(f'{prefix}/metrics/mIoU', torch.stack(ious).mean(), on_epoch=True, logger=True, sync_dist=True)
         self.metrics.reset()
 
 

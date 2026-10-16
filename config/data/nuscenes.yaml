@@ -5,18 +5,19 @@ dataset: 'nuscenes_generated'
 # used to get_split
 version: 'v1.0-trainval'                # 'v1.0-mini' for debugging trainval
 dataset_dir: ./data/nuscenes
-labels_dir: ./data/nuscenes/GLSS_labels
+labels_dir: ./data/nuscenes/GLSS_labels_3cam        #GLSS_labels # less_cam
 
 # used to generate dataset
-cameras: [[0, 1, 2, 3, 4, 5]]
+#cameras: [[0, 1, 2, 3, 4, 5]]   # 6 cam config
+cameras: [[0, 1, 2]]   # 3 cam config less_cam
                            
 # label parameters
 bev:
-  h: 200
+  h: 100 #200 # less_cam
   w: 200
-  h_meters: 100.0
+  h_meters: 50.0 #100.0 # less_cam
   w_meters: 100.0
-  offset: 0.0
+  offset: 0.5 #0.0 # less_cam
 
 # input parameters (not used in label generation)
 image:

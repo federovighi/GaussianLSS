@@ -264,15 +264,15 @@ class LoadDataTransform(torchvision.transforms.ToTensor):
         V = sample.view
 
         # bev segmentation
-        bev = np.zeros((200, 200), dtype=np.uint8)
+        bev = np.zeros((100, 200), dtype=np.uint8)  # less_cam 
 
         # center & offset
-        center_score = np.zeros((200, 200), dtype=np.float32)
-        center_offset = np.zeros((200, 200, 2), dtype=np.float32) #+ 255
-        visibility = np.full((200, 200), 255, dtype=np.uint8)
+        center_score = np.zeros((100, 200), dtype=np.float32) # less_cam
+        center_offset = np.zeros((100, 200, 2), dtype=np.float32) #+ 255 # less_cam
+        visibility = np.full((100, 200), 255, dtype=np.uint8) # less_cam
 
-        buf = np.zeros((200, 200), dtype=np.uint8)
-        coords = np.stack(np.meshgrid(np.arange(200), np.arange(200)), -1).astype(np.float32)
+        buf = np.zeros((100, 200), dtype=np.uint8) # less_cam
+        coords = np.stack(np.meshgrid(np.arange(200), np.arange(100)), -1).astype(np.float32) # less_cam invertite per via della logica della BEV
         sigma = 1
 
         for box_data in gt_box:
@@ -348,7 +348,7 @@ class LoadDataTransform(torchvision.transforms.ToTensor):
         pose = sample['pose'] @ bev_augm
 
         map_mask = self.nusc_map[sample['map_name']].get_map_mask((pose[0][-1], pose[1][-1], 100, 100), angle, self.map_layers, (h,w))
-        result = {self.map_layers[i]: self.to_tensor(255 * np.flipud(m)[..., None]) for i, m in enumerate(map_mask)}
+        result = {self.map_layers[i]: self.to_tensor(255 * np.flipud(m)[:100, :][..., None]) for i, m in enumerate(map_mask)} # less_cam aggiunta la parte [:100, :] per considerare solo la metà superiore  
         return result
     
     
@@ -368,7 +368,7 @@ class LoadDataTransform(torchvision.transforms.ToTensor):
             result.update(get_cameras(batch, **self.image_config))
 
         if self.bev:
-            bev_augm = self.augment_bev() if self.augment_bev else np.eye(4) 
+            bev_augm = self.augment_bev() if self.augment_bev else np.eye(4, dtype=np.float32) # less_cam evita incompatibilità float  
             
             if self.vehicle:
                 bev, center, offset, visibility = self.get_bev_from_gtbbox(batch, bev_augm, mode='vehicle')
