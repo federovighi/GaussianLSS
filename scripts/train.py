@@ -61,9 +61,11 @@ def main(cfg):
         LearningRateMonitor(logging_interval='epoch'),
         ModelCheckpoint(
             save_weights_only=True,
-            filename='last',
-            monitor ='val/metrics/mIoU',
+            filename='epoch{epoch:02d}-score{val/score:.4f}',
+            auto_insert_metric_name=False,
+            monitor ='val/score',
             mode='max',
+            save_top_k=3,
         ),
 
         VisualizationCallback(viz_fn, cfg.experiment.log_image_interval)

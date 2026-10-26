@@ -19,6 +19,8 @@ class ModelModule(pl.LightningModule):
         self.val_only = val_only
         self.optimizer_args = optimizer_args
         self.scheduler_args = scheduler_args
+        self.ref_val_miou = None
+        self.ref_val_loss = None
 
     def forward(self, batch):
         return self.backbone(batch)
@@ -64,8 +66,26 @@ class ModelModule(pl.LightningModule):
             self._log_epoch_metrics('train')
         # self._enable_dataloader_shuffle(self.trainer.val_dataloaders)
 
-    def on_validation_epoch_end(self): # validation_epoch_end
-        self._log_epoch_metrics('val')
+    def on_validation_epoch_end(self):
+        val_miou = self._log_epoch_metrics('val')
+
+        if self.trainer.sanity_checking or self.val_only:
+            return
+
+        val_loss = self.trainer.callback_metrics['val/loss'].detach()
+
+        if self.ref_val_miou is None:
+            self.ref_val_miou = val_miou.detach().clone()
+            self.ref_val_loss = val_loss.clone()
+
+        eps = 1e-8
+
+        miou_rel = (val_miou - self.ref_val_miou) / self.ref_val_miou.clamp_min(eps)
+        loss_rel = (self.ref_val_loss - val_loss) / self.ref_val_loss.clamp_min(eps)
+
+        score = 0.6 * miou_rel + 0.4 * loss_rel
+
+        self.log('val/score', score, on_epoch=True, logger=True, prog_bar=True, sync_dist=True)
 
     def _log_epoch_metrics(self, prefix: str):
         """
@@ -90,8 +110,12 @@ class ModelModule(pl.LightningModule):
                     ious.append(value)
                 self.log(f'{prefix}/metrics/{key}', value, on_epoch=True, logger=True, sync_dist=True)
 
-        self.log(f'{prefix}/metrics/mIoU', torch.stack(ious).mean(), on_epoch=True, logger=True, sync_dist=True)
+        miou = torch.stack(ious).mean()
+
+        self.log(f'{prefix}/metrics/mIoU', miou, on_epoch=True, logger=True, sync_dist=True)
         self.metrics.reset()
+
+        return miou
 
 
     def _enable_dataloader_shuffle(self, dataloaders):
