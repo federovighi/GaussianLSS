@@ -83,7 +83,7 @@ class ModelModule(pl.LightningModule):
         miou_rel = (val_miou - self.ref_val_miou) / self.ref_val_miou.clamp_min(eps)
         loss_rel = (self.ref_val_loss - val_loss) / self.ref_val_loss.clamp_min(eps)
 
-        score = 0.6 * miou_rel + 0.4 * loss_rel
+        score = miou_rel + 0.7 * loss_rel
 
         self.log('val/score', score, on_epoch=True, logger=True, prog_bar=True, sync_dist=True)
 

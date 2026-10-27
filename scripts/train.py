@@ -59,11 +59,19 @@ def main(cfg):
     callbacks = [
         ModelSummary(max_depth=2),
         LearningRateMonitor(logging_interval='epoch'),
-        ModelCheckpoint(
+        ModelCheckpoint( # Best 5 checkpoints for score
             save_weights_only=True,
             filename='epoch{epoch:02d}-score{val/score:.4f}',
             auto_insert_metric_name=False,
             monitor ='val/score',
+            mode='max',
+            save_top_k=5,
+        ),
+        ModelCheckpoint( # Best 3ccheckpoints for mIoU
+            save_weights_only=True,
+            filename='epoch{epoch:02d}-miou{val/miou:.4f}',
+            auto_insert_metric_name=False,
+            monitor='val/metrics/miou',
             mode='max',
             save_top_k=3,
         ),
